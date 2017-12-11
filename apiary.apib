@@ -98,76 +98,99 @@ Resources related to a users in the API.
 
 # Group Meetings
 
-## Questions Collection [/questions]
+## Meetings Action [/v1/meetings{?key}]
 
-### List All Questions [GET]
++ Parameters
+    - key : `1e3576bt` (string, required)
 
-+ Response 200 (application/json)
+### Create a New Meeting [POST]
 
-        [
-            {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 2048
-                    }, {
-                        "choice": "Python",
-                        "votes": 1024
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 512
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 256
-                    }
-                ]
-            }
-        ]
-
-### Create a New Question [POST]
-
-You may create your own question using this action. It takes a JSON
-object containing a question and a collection of answers in the
-form of choices.
+You may create a new meeting using this action. It takes a JSON
+object containing a meeting title, collection of participators, 
+start time and end time.
 
 + Request (application/json)
 
         {
-            "question": "Favourite programming language?",
-            "choices": [
-                "Swift",
-                "Python",
-                "Objective-C",
-                "Ruby"
-            ]
+            "title": "Favourite programming language",
+            "participators": [
+                "John",
+                "Marry",
+                "Alice",
+                "Bob"
+            ], 
+            "startTime": "2017-12-12", 
+            "endTime": "2017-12-13"
         }
 
 + Response 201 (application/json)
 
     + Headers
 
-            Location: /questions/2
+            Location: /meetings/cm
 
     + Body
 
             {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 0
-                    }, {
-                        "choice": "Python",
-                        "votes": 0
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 0
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 0
-                    }
-                ]
+                "title": "Favourite programming language",
+                "participators": [
+                    "John",
+                    "Marry",
+                    "Alice",
+                    "Bob"
+                ], 
+                "startTime": "2017-12-12", 
+                "endTime": "2017-12-13", 
+                "Sponsor": "Jack"
             }
+            
+### Quit a Meeting [PUT]
+
+You may quit a meeting using this action. It takes a title
+of the meeting as the parameter.
+
++ Request (application/json)
+
+        {
+            "title": "Favourite programming language"
+        }
+
++ Response 200 (text/plain)
+
+        Success!
+        
+### Clear Meetings [DELETE]
+
+You may clear all the meetings you sponsored using this action.
+
++ Response 200 (text/plain)
+
+        Success!
+            
+## Meetings Query [/v1/meetings/qm{?key,starttime,endtime}]
+
++ Parameters
+    - key : `1e3576bt` (string, required)
+    - starttime : `2017-12-12` (string, required) - Start Time
+    - endtime : `2017-12-15` (required) - End Time
+
+### Query Meetings [GET]
+
+You may query all the meetings between specific time interval.
+It takes a JSON object containing start time and end time of 
+the interval.
+    
++ Response 200 (application/json)
+
+        {
+            "title": "Favourite programming language",
+            "participators": [
+                "John",
+                "Marry",
+                "Alice",
+                "Bob"
+            ], 
+            "startTime": "2017-12-12", 
+            "endTime": "2017-12-13", 
+            "Sponsor": "Jack"
+        }
