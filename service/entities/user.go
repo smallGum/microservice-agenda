@@ -38,7 +38,7 @@ func validUsername(username string) bool {
 	}
 }
 
-func register(username string, password string) bool {
+func Register(username string, password string) bool {
 	if validUsername(username) {
 		user := NewUser(username, password)
 		_, err := agendaDB.Insert(user)

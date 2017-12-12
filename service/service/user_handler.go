@@ -51,3 +51,18 @@ func LoginHandler(formatter *render.Render) http.HandlerFunc {
 		}
 	}
 }
+
+func registerHndler(formatter *render.Render) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, req *http.Request) {
+		req.ParseForm()
+		username := req.Form["username"][0]
+		password := req.Form["password"][0]
+		user := entities.NewUser(username, password)
+		if entities.Register(username, password) {
+			formatter.JSON(w, http.StatusOK, user)
+		} else {
+			w.Write([]byte("register failed"))
+		}
+	}
+}
