@@ -14,6 +14,8 @@ func InitializeDB(dbFile string) {
 	checkErr(err)
 	// TODO: add all tables
 	err = agendaDB.Sync2(new(LoginInfo))
+	err = agendaDB.Sync2(new(User))
+
 	checkErr(err)
 }
 
