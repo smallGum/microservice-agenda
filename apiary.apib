@@ -17,43 +17,40 @@ Resource operations related to a user in the API.
 
 ### Get User Key [GET]
 
-get a security key for operations later
+get the key of currently logined user
 
 + Response 200 (application/json)
-    
+
         {
-            "key":"1e3576bt",
-            "permissions":["user","admin"]
+            "key":"1",
+            "UserName":"Lisi"
         }
-        
+
 
 # Group Users
 
 Resources related to a users in the API.
 
-## Users Collection [/v1/users{?key}]
+## Users Collection [/v1/users]
 
-+ Parameters
-    - key : `1e3576bt` (string, required)
-        
 ### List all Users [GET]
 
 + Response 200 (application/json)
 
         [
             {
-                "id":1,
                 "username":"zhang3",
                 "password":"zhang",
                 "email":"zhang3@mail2.sysu.edu.cn"
+                "telephone":"12342431233"
             },{
-                "id":2,
                 "username":"li4",
                 "password":"li",
                 "email":"li4@mail2.sysu.edu.cn"
+                "telephone":"1231212123"
             }
         ]
-        
+
 ### Create a New User [POST]
 
 + Request (application/json)
@@ -61,7 +58,6 @@ Resources related to a users in the API.
         {
             "username":"zhang3",
             "password":"zhang",
-            "email":"zhang3@mail2.sysu.edu.cn"
         }
 
 + Response 201 (application/json)
@@ -69,9 +65,9 @@ Resources related to a users in the API.
     + Headers
 
             Location: /users/1
-            
+
     + Body
-    
+
             {
                 "id": 1,
                 "username":"zhang3",
@@ -87,10 +83,10 @@ Resources related to a users in the API.
 + Response 200 (application/json)
 
         {
-            "id" : 1,
             "username":"zhang3",
             "password":"zhang",
             "email":"zhang3@mail2.sysu.edu.cn"
+            "telephone":"1231212123"
         }
 
 
@@ -108,7 +104,7 @@ Resources related to meetings in the API.
 ### Create a New Meeting [POST]
 
 You may create a new meeting using this action. It takes a JSON
-object containing a meeting title, collection of participators, 
+object containing a meeting title, collection of participators,
 start time and end time.
 
 + Request (application/json)
@@ -120,8 +116,8 @@ start time and end time.
                 "Marry",
                 "Alice",
                 "Bob"
-            ], 
-            "startTime": "2017-12-12", 
+            ],
+            "startTime": "2017-12-12",
             "endTime": "2017-12-13"
         }
 
@@ -140,12 +136,12 @@ start time and end time.
                     "Marry",
                     "Alice",
                     "Bob"
-                ], 
-                "startTime": "2017-12-12", 
-                "endTime": "2017-12-13", 
+                ],
+                "startTime": "2017-12-12",
+                "endTime": "2017-12-13",
                 "Sponsor": "Jack"
             }
-            
+
 ### Quit a Meeting [PUT]
 
 You may quit a meeting using this action. It takes a title
@@ -160,7 +156,7 @@ of the meeting as the parameter.
 + Response 200 (text/plain)
 
         Success!
-        
+
 ### Clear Meetings [DELETE]
 
 You may clear all the meetings you sponsored using this action.
@@ -168,7 +164,7 @@ You may clear all the meetings you sponsored using this action.
 + Response 200 (text/plain)
 
         Success!
-            
+
 ## Meetings Query [/v1/meetings/qm{?key,starttime,endtime}]
 
 + Parameters
@@ -178,10 +174,10 @@ You may clear all the meetings you sponsored using this action.
 
 ### Query Meetings [GET]
 
-You may query all the meetings between specific time interval 
-using this action. It takes a JSON object containing start time 
+You may query all the meetings between specific time interval
+using this action. It takes a JSON object containing start time
 and end time of the interval.
-    
+
 + Response 200 (application/json)
 
         {
@@ -191,8 +187,8 @@ and end time of the interval.
                 "Marry",
                 "Alice",
                 "Bob"
-            ], 
-            "startTime": "2017-12-12", 
-            "endTime": "2017-12-13", 
+            ],
+            "startTime": "2017-12-12",
+            "endTime": "2017-12-13",
             "Sponsor": "Jack"
         }
