@@ -10,7 +10,7 @@ import (
 	"github.com/unrolled/render"
 )
 
-func getUserByIdHandler(formatter *render.Render) http.HandlerFunc {
+func GetUserByIdHandler(formatter *render.Render) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		req.ParseForm()
 		if len(req.Form["id"][0]) == 0 {

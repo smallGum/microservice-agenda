@@ -53,7 +53,7 @@ func register(username string, password string) bool {
 	}
 }
 
-func login(username string, password string) bool {
+func Login(username string, password string) bool {
 	var user User
 	agendaDB.Id(username).Get(&user)
 	if user.UserName == username && user.Password == password {
