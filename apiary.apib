@@ -127,24 +127,36 @@ start time and end time.
 
 + Response 201 (application/json)
 
-    + Headers
+        {
+            "title": "Favourite programming language",
+            "participators": [
+                "John",
+                "Marry",
+                "Alice",
+                "Bob"
+            ], 
+            "startTime": "2017-12-12", 
+            "endTime": "2017-12-13", 
+            "Sponsor": "Jack"
+        }
+            
++ Response 400 (application/json)
 
-            Location: /meetings/cm
+        {
+            "something required"
+        }
+            
++ Response 401 (application/json)
 
-    + Body
+        {
+            "invalid key"
+        }
+            
++ Response 503 (application/json)
 
-            {
-                "title": "Favourite programming language",
-                "participators": [
-                    "John",
-                    "Marry",
-                    "Alice",
-                    "Bob"
-                ], 
-                "startTime": "2017-12-12", 
-                "endTime": "2017-12-13", 
-                "Sponsor": "Jack"
-            }
+        {
+            "something wrong"
+        }
             
 ### Quit a Meeting [PUT]
 
@@ -157,19 +169,53 @@ of the meeting as the parameter.
             "title": "Favourite programming language"
         }
 
-+ Response 200 (text/plain)
++ Response 200 (application/json)
 
-        Success!
+        {
+            "success"
+        }
+        
++ Response 400 (application/json)
+
+        {
+            "something required"
+        }
+            
++ Response 401 (application/json)
+
+        {
+            "invalid key"
+        }
+        
++ Response 404 (application/json)
+
+        {
+            "title error"
+        }
         
 ### Clear Meetings [DELETE]
 
 You may clear all the meetings you sponsored using this action.
 
-+ Response 200 (text/plain)
++ Response 200 (application/json)
 
-        Success!
+        {
+            "success"
+        }
+        
++ Response 400 (application/json)
+
+        {
+            "something required"
+        }
             
-## Meetings Query [/v1/meetings/qm{?key,starttime,endtime}]
++ Response 401 (application/json)
+
+        {
+            "invalid key"
+        }
+            
+## Meetings Query [/v1/meetings{?key,starttime,endtime}]
 
 + Parameters
     - key : `1e3576bt` (string, required)
@@ -195,4 +241,22 @@ and end time of the interval.
             "startTime": "2017-12-12", 
             "endTime": "2017-12-13", 
             "Sponsor": "Jack"
+        }
+        
++ Response 400 (application/json)
+
+        {
+            "something required"
+        }
+        
++ Response 401 (application/json)
+
+        {
+            "invalid key"
+        }
+        
++ Response 404 (application/json)
+
+        {
+            "time error"
         }
