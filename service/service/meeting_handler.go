@@ -45,7 +45,7 @@ func createMeetingHandler(formatter *render.Render) http.HandlerFunc {
 		// create a new meeting
 		newMeeting, err := entities.NewMeeting(req.Form["title"][0], req.Form["startTime"][0], req.Form["endTime"][0], currentUser, req.Form["participators"])
 		if err != nil {
-			formatter.JSON(w, http.StatusPreconditionFailed, struct{ ErrorIndo string }{err.Error()})
+			formatter.JSON(w, http.StatusServiceUnavailable, struct{ ErrorIndo string }{err.Error()})
 			return
 		}
 
@@ -81,7 +81,7 @@ func quitMeetingHandler(formatter *render.Render) http.HandlerFunc {
 			return
 		}
 
-		formatter.JSON(w, http.StatusBadRequest, struct{ ErrorIndo string }{"success!"})
+		formatter.JSON(w, http.StatusOK, struct{ ErrorIndo string }{"success!"})
 	}
 }
 
@@ -104,7 +104,7 @@ func clearMeetingHandler(formatter *render.Render) http.HandlerFunc {
 
 		// query a meeting
 		entities.ClearMeeting(currentUser)
-		formatter.JSON(w, http.StatusBadRequest, struct{ ErrorIndo string }{"success!"})
+		formatter.JSON(w, http.StatusOK, struct{ ErrorIndo string }{"success!"})
 	}
 }
 
@@ -139,6 +139,6 @@ func queryMeetingHandler(formatter *render.Render) http.HandlerFunc {
 			return
 		}
 
-		formatter.JSON(w, http.StatusBadRequest, newMeeting)
+		formatter.JSON(w, http.StatusOK, newMeeting)
 	}
 }
