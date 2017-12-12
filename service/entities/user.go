@@ -97,3 +97,33 @@ func setTelephone(tel string) {
 		log.Fatal("something wrong occur when update telephone")
 	}
 }
+
+func GetUserKey(username string) LoginInfo {
+	var user LoginInfo
+	agendaDB.Where("UserName=?", username).Get(&user)
+	return user
+}
+
+func GetUserById(id int64) User {
+	var logined LoginInfo
+	_, err := agendaDB.Where("Key=?", id).Get(&logined)
+	if err != nil {
+		log.Fatal("something wrong occured in getUserbyId")
+	}
+	username := logined.UserName
+	var user User
+	_, err = agendaDB.Where("UserName=?", username).Get(&user)
+	if err != nil {
+		log.Fatal("something wrong occured in getUserbyId")
+	}
+	return user
+}
+
+func GetAllUsers() []User {
+	users := make([]User, 0)
+	err := agendaDB.Find(&users)
+	if err != nil {
+		log.Fatal("something wrong occured when get all users")
+	}
+	return users
+}
