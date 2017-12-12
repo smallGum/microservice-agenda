@@ -31,7 +31,7 @@ get the key of currently logined user
 
 Resources related to a users in the API.
 
-## Users Collection [/v1/users]
+## Users Collection [/v1/allusers]
 
 ### List all Users [GET]
 
@@ -130,24 +130,24 @@ start time and end time.
                 "Marry",
                 "Alice",
                 "Bob"
-            ], 
-            "startTime": "2017-12-12", 
-            "endTime": "2017-12-13", 
+            ],
+            "startTime": "2017-12-12",
+            "endTime": "2017-12-13",
             "Sponsor": "Jack"
         }
-            
+
 + Response 400 (application/json)
 
         {
             "something required"
         }
-            
+
 + Response 401 (application/json)
 
         {
             "invalid key"
         }
-            
+
 + Response 503 (application/json)
 
         {
@@ -170,19 +170,19 @@ of the meeting as the parameter.
         {
             "success"
         }
-        
+
 + Response 400 (application/json)
 
         {
             "something required"
         }
-            
+
 + Response 401 (application/json)
 
         {
             "invalid key"
         }
-        
+
 + Response 404 (application/json)
 
         {
@@ -198,19 +198,19 @@ You may clear all the meetings you sponsored using this action.
         {
             "success"
         }
-        
+
 + Response 400 (application/json)
 
         {
             "something required"
         }
-            
+
 + Response 401 (application/json)
 
         {
             "invalid key"
         }
-            
+
 ## Meetings Query [/v1/meetings{?key,starttime,endtime}]
 
 + Parameters
@@ -238,19 +238,19 @@ and end time of the interval.
             "endTime": "2017-12-13",
             "Sponsor": "Jack"
         }
-        
+
 + Response 400 (application/json)
 
         {
             "something required"
         }
-        
+
 + Response 401 (application/json)
 
         {
             "invalid key"
         }
-        
+
 + Response 404 (application/json)
 
         {
