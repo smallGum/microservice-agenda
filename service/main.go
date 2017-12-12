@@ -1,11 +1,10 @@
 package main
 
 import (
-	"cloudgo-work4/service"
 	"os"
 
 	"microservice-agenda/service/entities"
-	// "microservice-agenda/service/service"
+	"microservice-agenda/service/service"
 
 	flag "github.com/spf13/pflag"
 )
