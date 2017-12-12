@@ -55,14 +55,14 @@ func Register(username string, password string) bool {
 
 func Login(username string, password string) bool {
 	var user User
-	agendaDB.Id(username).Get(&user)
+	agendaDB.Where("username=?", username).Get(&user)
 	if user.UserName == username && user.Password == password {
 		var loginOne LoginInfo
 		loginOne.UserName = user.UserName
 		agendaDB.Insert(loginOne)
 		return true
 	} else {
-		log.Fatal("wrong username or password")
+		fmt.Println("wrong username or password")
 		return false
 	}
 }

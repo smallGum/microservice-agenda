@@ -29,7 +29,9 @@ func initRoutes(mx *mux.Router, formatter *render.Render) {
 	mx.HandleFunc("/v1/meetings", queryMeetingHandler(formatter)).Methods("GET")
 
 	mx.HandleFunc("/v1/allusers", ListAllUsersHandler(formatter)).Methods("GET")
-	mx.HandleFunc("/v1/users/getkey/{username,password}", GetUserByIdHandler(formatter)).Methods("GET")
-	mx.HandleFunc("/v1/users/{id}", GetUserKeyHandler(formatter)).Methods("GET")
-	mx.HandleFunc("/v1/newusers/{username,password}", GetUserKeyHandler(formatter)).Methods("POST")
+	mx.HandleFunc("/v1/users", GetUserByIdHandler(formatter)).Methods("POST")
+	mx.HandleFunc("/v1/users/getkey", GetUserKeyHandler(formatter)).Methods("POST")
+	mx.HandleFunc("/v1/newusers", registerHndler(formatter)).Methods("POST")
+	mx.HandleFunc("/v1/login", LoginHandler(formatter)).Methods("POST")
+	mx.HandleFunc("/v1/hello", testHndler(formatter)).Methods("GET")
 }
