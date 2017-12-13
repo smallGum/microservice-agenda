@@ -108,11 +108,11 @@ func QuitMeeting(user, title string) error {
 // ClearMeeting clear all the meeting one sponsored
 func ClearMeeting(user string) {
 	var u User
-	var m Meeting
 	var newMeetings []string
 
 	agendaDB.Where("username=?", user).Get(&u)
 	for _, t := range u.Meetings {
+		var m Meeting
 		agendaDB.Where("title=?", t).Get(&m)
 		if m.Sponsor == user {
 			agendaDB.Where("title=?", t).Delete(&m)
@@ -120,14 +120,12 @@ func ClearMeeting(user string) {
 			newMeetings = append(newMeetings, t)
 		}
 	}
-	u.Meetings = []string{}
+	u.Meetings = newMeetings
 	agendaDB.Where("username=?", user).Update(&u)
 }
 
 // QueryMeeting query one's meetings between a specified time interval
 func QueryMeeting(user, start, end string) ([]Meeting, error) {
-	var u User
-	var m Meeting
 	var rst []Meeting
 	startTime, ok1 := getTime(start)
 	endTime, ok2 := getTime(end)
@@ -139,8 +137,10 @@ func QueryMeeting(user, start, end string) ([]Meeting, error) {
 		return []Meeting{}, errors.New("start time must before end time")
 	}
 
+	var u User
 	agendaDB.Where("username=?", user).Get(&u)
 	for _, t := range u.Meetings {
+		var m Meeting
 		agendaDB.Where("title=?", t).Get(&m)
 		if !(m.StartTime.After(endTime) || m.EndTime.Before(startTime)) {
 			rst = append(rst, m)

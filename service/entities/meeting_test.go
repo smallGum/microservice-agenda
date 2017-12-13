@@ -51,8 +51,8 @@ func TestMeeting(t *testing.T) {
 	t.Log("[meetingtest] clearing meeting")
 	ClearMeeting("Alice")
 	t.Log("[meetingtest] querying meeting")
-	m, err = QueryMeeting("Alice", "2017-01-02", "2017-01-04")
-	if len(m) != 0 {
+	m, err = QueryMeeting("Jack", "2017-01-02", "2017-01-04")
+	if len(m) != 1 {
 		t.Fatal("meeting clear failure")
 	}
 	t.Log("meeting clear success")
