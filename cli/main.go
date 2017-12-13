@@ -15,8 +15,8 @@
 package main
 
 import (
-	"github.com/jack-cheng/CLI-agenda/cmd"
-	"github.com/jack-cheng/CLI-agenda/entity"
+	"microservice-agenda/cli/cmd"
+	"microservice-agenda/cli/entity"
 )
 
 func main() {

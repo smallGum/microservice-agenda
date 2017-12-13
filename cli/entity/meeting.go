@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/jack-cheng/CLI-agenda/errors"
+	"microservice-agenda/cli/errors"
 )
 
 // ---------------------------------------------------

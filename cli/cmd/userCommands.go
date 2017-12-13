@@ -17,8 +17,9 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/jack-cheng/CLI-agenda/entity"
-	"github.com/jack-cheng/CLI-agenda/errors"
+	"microservice-agenda/cli/entity"
+	"microservice-agenda/cli/errors"
+
 	"github.com/spf13/cobra"
 )
 

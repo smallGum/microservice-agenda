@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/jack-cheng/CLI-agenda/errors"
+	"microservice-agenda/cli/errors"
 )
 
 // read all meetings from the file
