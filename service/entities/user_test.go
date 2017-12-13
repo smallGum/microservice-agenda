@@ -42,7 +42,7 @@ func TestUser(t *testing.T) {
 	}
 	t.Log("get user by id success")
 
-	t.Log("get all users")
+	t.Log("getting all users")
 	us := GetAllUsers()
 	if len(us) != 3 {
 		t.Fatal("get all user failure")
