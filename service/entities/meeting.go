@@ -24,7 +24,7 @@ func NewMeeting(title, start, end, spon string, parts []string) (Meeting, error)
 	if !(validateTitle(title)) {
 		return newM, errors.New("title has existed")
 	}
-	if !(validateParticipators(parts)) {
+	if !validateParticipators(parts) {
 		return newM, errors.New("not registered participators")
 	}
 	startTime, ok1 := getTime(start)
@@ -50,13 +50,14 @@ func NewMeeting(title, start, end, spon string, parts []string) (Meeting, error)
 	}
 
 	var user User
-	agendaDB.Id(spon).Get(&user)
+	agendaDB.Where("username=?", spon).Get(&user)
 	user.Meetings = append(user.Meetings, title)
-	agendaDB.Id(spon).Update(&user)
+	agendaDB.Where("username=?", spon).Update(&user)
 	for _, part := range parts {
-		agendaDB.Id(part).Get(&user)
-		user.Meetings = append(user.Meetings, title)
-		agendaDB.Id(part).Update(&user)
+		var u User
+		agendaDB.Where("username=?", part).Get(&u)
+		u.Meetings = append(u.Meetings, title)
+		agendaDB.Where("username=?", part).Update(&u)
 	}
 
 	return newM, nil
@@ -67,8 +68,8 @@ func QuitMeeting(user, title string) error {
 	var u User
 	var m Meeting
 
-	agendaDB.Id(user).Get(&u)
-	got, err := agendaDB.Id(title).Get(&m)
+	agendaDB.Where("username=?", user).Get(&u)
+	got, err := agendaDB.Where("title=?", title).Get(&m)
 	if !got {
 		return errors.New("title error: no such meeting title")
 	}
@@ -94,11 +95,11 @@ func QuitMeeting(user, title string) error {
 		}
 	}
 
-	agendaDB.Id(user).Update(&u)
+	agendaDB.Where("username=?", user).Update(&u)
 	if len(m.Participators) == 0 {
-		agendaDB.Id(title).Delete(&m)
+		agendaDB.Where("title=?", title).Delete(&m)
 	} else {
-		agendaDB.Id(title).Update(&m)
+		agendaDB.Where("title=?", title).Update(&m)
 	}
 
 	return nil
@@ -108,14 +109,19 @@ func QuitMeeting(user, title string) error {
 func ClearMeeting(user string) {
 	var u User
 	var m Meeting
+	var newMeetings []string
 
-	agendaDB.Id(user).Get(&u)
+	agendaDB.Where("username=?", user).Get(&u)
 	for _, t := range u.Meetings {
-		agendaDB.Id(t).Get(&m)
+		agendaDB.Where("title=?", t).Get(&m)
 		if m.Sponsor == user {
-			agendaDB.Id(t).Delete(&m)
+			agendaDB.Where("title=?", t).Delete(&m)
+		} else {
+			newMeetings = append(newMeetings, t)
 		}
 	}
+	u.Meetings = []string{}
+	agendaDB.Where("username=?", user).Update(&u)
 }
 
 // QueryMeeting query one's meetings between a specified time interval
@@ -133,9 +139,9 @@ func QueryMeeting(user, start, end string) ([]Meeting, error) {
 		return []Meeting{}, errors.New("start time must before end time")
 	}
 
-	agendaDB.Id(user).Get(&u)
+	agendaDB.Where("username=?", user).Get(&u)
 	for _, t := range u.Meetings {
-		agendaDB.Id(t).Get(&m)
+		agendaDB.Where("title=?", t).Get(&m)
 		if !(m.StartTime.After(endTime) || m.EndTime.Before(startTime)) {
 			rst = append(rst, m)
 		}
@@ -150,15 +156,18 @@ func QueryMeeting(user, start, end string) ([]Meeting, error) {
 
 func validateTitle(title string) bool {
 	var m Meeting
-	got, _ := agendaDB.Id(title).Get(&m)
-	return !got
+	got, err := agendaDB.Where("title=?", title).Get(&m)
+	if got == false || err != nil {
+		return true
+	}
+	return false
 }
 
 func validateParticipators(parts []string) bool {
-	var user User
 	for _, part := range parts {
-		got, _ := agendaDB.Id(part).Get(&user)
-		if !got {
+		var user User
+		got, err := agendaDB.Where("username=?", part).Get(&user)
+		if got != true || err != nil {
 			return false
 		}
 	}
@@ -174,12 +183,12 @@ func validateTime(start, end time.Time) bool {
 }
 
 func validateNoConflicts(parts []string, start, end time.Time) bool {
-	var m Meeting
-	var u User
 	for _, part := range parts {
-		agendaDB.Id(part).Get(&u)
+		var u User
+		agendaDB.Where("username=?", part).Get(&u)
 		for _, ms := range u.Meetings {
-			agendaDB.Id(ms).Get(&m)
+			var m Meeting
+			agendaDB.Where("title=?", ms).Get(&m)
 			if !(end.Before(m.StartTime) || end.Equal(m.StartTime) ||
 				start.After(m.EndTime) || start.Equal(m.EndTime)) {
 				return false
