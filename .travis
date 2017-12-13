@@ -1,9 +1,0 @@
-language: go
-
-go:
-  - 1.9
-
-script:
-  - cd $GOPATH/src/microservice-agenda/service/entity
-  - go test -v meeting_test.go initial.go logined.go meeting.go user.go
-  - go test -v user_test.go initial.go logined.go meeting.go user.go
