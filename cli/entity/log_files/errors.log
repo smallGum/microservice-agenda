@@ -1,0 +1,16 @@
+: errors.go:12: meeting "test" has existed. expected another title.
+: errors.go:12: meeting participator none has not registered.
+: errors.go:12: invalid start time, which should be less than end time
+: errors.go:12: participator yes has meeting time conflict.
+: errors.go:12: participator none has meeting time conflict.
+: errors.go:12: invalid time format: 2017-08
+: errors.go:12: invalid time format: 2017-08-39
+: errors.go:12: invalid time format: 2017-14-22
+: errors.go:12: meeting "test" has existed. expected another title.
+: errors.go:12: meeting participator none has not registered.
+: errors.go:12: invalid start time, which should be less than end time
+: errors.go:12: participator yes has meeting time conflict.
+: errors.go:12: participator none has meeting time conflict.
+: errors.go:12: invalid time format: 2017-08
+: errors.go:12: invalid time format: 2017-08-39
+: errors.go:12: invalid time format: 2017-14-22
