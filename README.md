@@ -201,4 +201,4 @@ Flags:
 Use "CLI-agenda [command] --help" for more information about a command.
 ```
 
-All functions test are like ![CLI-agenda](https://github.com/smallGum/CLI-agenda/blob/master/README.md), thus we do not list here again.
+All functions test are like [CLI-agenda](https://github.com/smallGum/CLI-agenda/blob/master/README.md), thus we do not list here again.
