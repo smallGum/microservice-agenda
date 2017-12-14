@@ -6,7 +6,7 @@ In this project, we implement both command-line agenda program and web service a
 
 ## Build
 
-For docker hub information, see ![microservice-agenda on docker hub](https://hub.docker.com/r/gumcheng/microservice-agenda/)
+For docker hub information, see [microservice-agenda on docker hub](https://hub.docker.com/r/gumcheng/microservice-agenda/)
 
 ```shell
 # pull microservice-agenda image
@@ -152,7 +152,7 @@ $ curl -d "title=Fruit&participators=Bob&participators=Lucy&startTime=2017-01-01
 
 Query a meeting:
 
-[query a meeting](images/Query.png)
+![query a meeting](images/Query.png)
 
 Clear meetings:
 
@@ -166,7 +166,7 @@ $ curl -X DELETE http://localhost:8080/v1/meetings?key=1
 
 After Clearing:
 
-[clear](images/Clear.png)
+![clear](images/Clear.png)
 
 ### agenda client usage
 
