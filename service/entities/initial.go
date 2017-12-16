@@ -12,7 +12,7 @@ func InitializeDB(dbFile string) {
 	var err error
 	agendaDB, err = xorm.NewEngine("sqlite3", dbFile)
 	checkErr(err)
-	// TODO: add all tables
+	// add all tables
 	err = agendaDB.Sync2(new(LoginInfo), new(Meeting), new(User))
 	checkErr(err)
 }
