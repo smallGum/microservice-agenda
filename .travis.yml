@@ -8,9 +8,13 @@ go_import_path: microservice-agenda/
 script:
   - echo 'client test'
   - cd $GOPATH/src/microservice-agenda/cli/entity
-  - go test -v
+  - go test -v meeting_test.go initial.go meeting.go user.go
+  - rm -rf data/
+  - go test -v user_test.go initial.go meeting.go user.go
+  - rm -rf data/
   - echo 'server test'
   - cd $GOPATH/src/microservice-agenda/service/entities
   - go test -v meeting_test.go initial.go logined.go meeting.go user.go
   - rm -rf data/
   - go test -v user_test.go initial.go logined.go meeting.go user.go
+  - rm -rf data/
