@@ -2,10 +2,7 @@ package entity
 
 import (
 	"fmt"
-	"os"
 	"time"
-
-	"microservice-agenda/cli/errors"
 )
 
 // ---------------------------------------------------
@@ -14,44 +11,41 @@ import (
 
 // Meeting one meeting entity
 type Meeting struct {
-	Title         string
-	Participators []string
-	StartTime     time.Time
-	EndTime       time.Time
-	Sponsor       string
+	Title         string    `xorm:"notnull pk 'title'"`
+	Participators []string  `xorm:"participators"`
+	StartTime     time.Time `xorm:"starttime"`
+	EndTime       time.Time `xorm:"endtime"`
+	Sponsor       string    `xorm:"sponsor"`
 }
 
-// Meetings all the meetings
-type meetings struct {
-	allMeetings  map[string]Meeting            // key: title, value: address of the Meeting entity that has this title
-	onesMeetings map[string]map[string]Meeting // key: user name, value: the meetings the user has participated
+type Participation struct {
+	UserName          string   `xorm:"notnull pk 'username'"`
+	Meetings          []string `xorm:"meetings"`
+	SponsoredMeetings []string `xorm:"sponsored_meetings"`
 }
-
-// AllMeetings only one meetings instance can be accessed
-var AllMeetings *meetings
 
 // -----------------------------------------------------
 // Meeting structure methods definition
 // -----------------------------------------------------
 
-// NewMeeting create a new meeting and add to AllMeetings
-func NewMeeting(title, start, end string, parts []string) {
+// NewMeeting create a new meeting and add to database
+func NewMeeting(title, start, end, cuName string, parts []string) bool {
 	if !(validateTitle(title)) {
-		os.Exit(1)
+		return false
 	}
 	if !(validateParticipators(parts)) {
-		os.Exit(1)
+		return false
 	}
 	startTime, ok1 := getTime(start)
 	endTime, ok2 := getTime(end)
 	if (!ok1) || (!ok2) {
-		os.Exit(1)
+		return false
 	}
 	if !(validateTime(startTime, endTime)) {
-		os.Exit(1)
+		return false
 	}
 	if !(validateNoConflicts(parts, startTime, endTime)) {
-		os.Exit(1)
+		return false
 	}
 
 	m := Meeting{
@@ -59,57 +53,184 @@ func NewMeeting(title, start, end string, parts []string) {
 		Participators: parts,
 		StartTime:     startTime,
 		EndTime:       endTime,
-		Sponsor:       GetCurrentUser().UserName,
+		Sponsor:       cuName,
 	}
 
-	AllMeetings.allMeetings[title] = m
-	for _, part := range parts {
-		if AllMeetings.onesMeetings[part] == nil {
-			AllMeetings.onesMeetings[part] = make(map[string]Meeting)
+	_, err := agendaDB.Insert(&m)
+	if err != nil {
+		return false
+	}
+
+	var participation Participation
+	got, _ := agendaDB.Where("username=?", cuName).Get(&participation)
+	if !got {
+		tmpParticipation := Participation{
+			UserName:          cuName,
+			Meetings:          []string{},
+			SponsoredMeetings: []string{},
 		}
-
-		AllMeetings.onesMeetings[part][title] = m
+		_, err = agendaDB.Insert(&tmpParticipation)
+		if err != nil {
+			return false
+		}
 	}
-	if AllMeetings.onesMeetings[m.Sponsor] == nil {
-		AllMeetings.onesMeetings[m.Sponsor] = make(map[string]Meeting)
+	participation.SponsoredMeetings = append(participation.SponsoredMeetings, title)
+	agendaDB.Where("username=?", cuName).Update(&participation)
+	for _, part := range parts {
+		var p Participation
+		got, _ = agendaDB.Where("username=?", part).Get(&p)
+		if !got {
+			tmpP := Participation{
+				UserName:          part,
+				Meetings:          []string{},
+				SponsoredMeetings: []string{},
+			}
+			_, err = agendaDB.Insert(&tmpP)
+			if err != nil {
+				return false
+			}
+		}
+		p.Meetings = append(p.Meetings, title)
+		agendaDB.Where("username=?", part).Update(&p)
 	}
 
-	AllMeetings.onesMeetings[m.Sponsor][title] = m
+	recordOperation(cuName, "create meeting "+title)
+
+	return true
+}
+
+func QuitMeeting(title, cuName string) bool {
+	var p Participation
+	agendaDB.Where("username = ?", cuName).Get(&p)
+	for index, meeting := range p.Meetings {
+		if meeting == title {
+			p.Meetings = append(p.Meetings[:index], p.Meetings[index+1:]...)
+			agendaDB.Where("username = ?", cuName).Cols("meetings").Update(&p)
+
+			var m Meeting
+			agendaDB.Where("title = ?", title).Get(&m)
+			for i, part := range m.Participators {
+				if part == cuName {
+					m.Participators = append(m.Participators[:i], m.Participators[i+1:]...)
+					break
+				}
+			}
+			if len(m.Participators) == 0 {
+				var sponsors []Participation
+				agendaDB.Find(&sponsors)
+				for _, spon := range sponsors {
+					isFind := false
+					for j, meet := range spon.SponsoredMeetings {
+						if meet == title {
+							spon.SponsoredMeetings = append(spon.SponsoredMeetings[:j], spon.SponsoredMeetings[j+1:]...)
+							agendaDB.Where("username = ?", spon.UserName).Update(&spon)
+							isFind = true
+							break
+						}
+					}
+					if isFind {
+						break
+					}
+				}
+				agendaDB.Where("title = ?", title).Delete(&m)
+			} else {
+				agendaDB.Where("title = ?", title).Update(&m)
+			}
+
+			recordOperation(cuName, "quit meeting "+title)
+
+			return true
+		}
+	}
+
+	return false
+}
+
+func CancelMeeting(title, cuName string) bool {
+	var p Participation
+	agendaDB.Where("username = ?", cuName).Get(&p)
+	for index, meeting := range p.SponsoredMeetings {
+		if meeting == title {
+			p.SponsoredMeetings = append(p.SponsoredMeetings[:index], p.SponsoredMeetings[index+1:]...)
+			agendaDB.Where("username = ?", cuName).Update(&p)
+			var m Meeting
+			agendaDB.Where("title = ?", title).Get(&m)
+			for _, usr := range m.Participators {
+				QuitMeeting(title, usr)
+			}
+
+			recordOperation(cuName, "cancel meeting "+title)
+
+			return true
+		}
+	}
+
+	return false
+}
+
+func ClearAllMeetings(cuName string) {
+	var p Participation
+	agendaDB.Where("username = ?", cuName).Get(&p)
+	for _, meeting := range p.SponsoredMeetings {
+		CancelMeeting(meeting, cuName)
+	}
+
+	recordOperation(cuName, "clear all meetings sponsored by "+cuName)
+}
+
+// GetMeetings show meetings between time interval [start, end]
+func GetMeetings(cuName, start, end string) {
+	ms := queryMeeting(cuName, start, end)
+
+	fmt.Println(cuName + "'s meetings between " + start + " and " + end + ": ")
+	if len(ms) == 0 {
+		fmt.Println("none.")
+		return
+	}
+
+	for _, v := range ms {
+		fmt.Println()
+		fmt.Println("-------------------------------")
+
+		fmt.Println("title: " + v.Title)
+		fmt.Printf("participators: %v\n", v.Participators)
+		fmt.Println("start time: " + v.StartTime.Format("2006-01-02"))
+		fmt.Println("end time: " + v.EndTime.Format("2006-01-02"))
+		fmt.Println("sponsor: " + v.Sponsor)
+
+		fmt.Println("-------------------------------")
+		fmt.Println()
+	}
+
+	recordOperation(cuName, "check all meetings between "+start+" and "+end)
 }
 
 // check if title has existed
 func validateTitle(title string) bool {
-	_, exist := AllMeetings.allMeetings[title]
-	if exist {
-		errors.ErrorMsg(GetCurrentUser().UserName, "meeting \""+title+"\" has existed. expected another title.")
-		return false
+	var m Meeting
+	got, err := agendaDB.Where("title=?", title).Get(&m)
+	if got == false || err != nil {
+		return true
 	}
-	return true
+	return false
 }
 
 // check if all the participators have registered
 func validateParticipators(parts []string) bool {
 	for _, part := range parts {
-		flag := false
-
-		for _, user := range users {
-			if part == user.UserName {
-				flag = true
-			}
-		}
-
-		if !flag {
-			errors.ErrorMsg(GetCurrentUser().UserName, "meeting participator "+part+" has not registered.")
+		var user User
+		got, err := agendaDB.Where("username=?", part).Get(&user)
+		if got != true || err != nil {
 			return false
 		}
 	}
+
 	return true
 }
 
 // check if start time is less than end time
 func validateTime(start, end time.Time) bool {
 	if start.After(end) || start.Equal(end) {
-		errors.ErrorMsg(GetCurrentUser().UserName, "invalid start time, which should be less than end time")
 		return false
 	}
 	return true
@@ -118,10 +239,13 @@ func validateTime(start, end time.Time) bool {
 // check if there are confilts
 func validateNoConflicts(parts []string, start, end time.Time) bool {
 	for _, part := range parts {
-		for _, ms := range AllMeetings.onesMeetings[part] {
-			if !(end.Before(ms.StartTime) || end.Equal(ms.StartTime) ||
-				start.After(ms.EndTime) || start.Equal(ms.EndTime)) {
-				errors.ErrorMsg(GetCurrentUser().UserName, "participator "+part+" has meeting time conflict.")
+		var u Participation
+		agendaDB.Where("username=?", part).Get(&u)
+		for _, ms := range u.Meetings {
+			var m Meeting
+			agendaDB.Where("title=?", ms).Get(&m)
+			if !(end.Before(m.StartTime) || end.Equal(m.StartTime) ||
+				start.After(m.EndTime) || start.Equal(m.EndTime)) {
 				return false
 			}
 		}
@@ -137,127 +261,47 @@ func validateNoConflicts(parts []string, start, end time.Time) bool {
 func getTime(t string) (time.Time, bool) {
 	tmpTime, err := time.Parse("2006-01-02", t)
 	if err != nil {
-		errors.ErrorMsg(GetCurrentUser().UserName, "invalid time format: "+t)
 		return time.Time{}, false
 	}
 
 	return tmpTime, true
 }
 
-// RemoveParticipator remove participators from a meeting
-func RemoveParticipator(title, name string) {
-	for i, part := range AllMeetings.allMeetings[title].Participators {
-		if part == name {
-			newP := append(AllMeetings.allMeetings[title].Participators[:i], AllMeetings.allMeetings[title].Participators[i+1:]...)
-			tmp := AllMeetings.allMeetings[title]
-			AllMeetings.allMeetings[title] = Meeting{
-				Title:         tmp.Title,
-				Participators: newP,
-				StartTime:     tmp.StartTime,
-				EndTime:       tmp.EndTime,
-				Sponsor:       tmp.Sponsor,
-			}
-			if len(AllMeetings.allMeetings[title].Participators) == 0 {
-				delete(AllMeetings.allMeetings, title)
-			}
-			break
-		}
-	}
-
-	delete(AllMeetings.onesMeetings[name], title)
-
-	for _, ms := range AllMeetings.onesMeetings {
-		for _, m := range ms {
-			if m.Title == title {
-				for i, part := range m.Participators {
-					if part == name {
-						m.Participators = append(m.Participators[:i], m.Participators[i+1:]...)
-					}
-				}
-			}
-		}
-	}
-}
-
 // ------------------------------------------------------
 // query meetings methods
 // ------------------------------------------------------
 
-// GetMeetings show meetings between time interval [start, end]
-func GetMeetings(start, end string) {
+// QueryMeeting query one's meetings between a specified time interval
+func queryMeeting(user, start, end string) []Meeting {
+	var rst []Meeting
 	startTime, ok1 := getTime(start)
 	endTime, ok2 := getTime(end)
+
 	if (!ok1) || (!ok2) {
-		os.Exit(1)
+		fmt.Println("time format error: require format \"YYYY-MM-DD\"")
+		return []Meeting{}
 	}
-	curUser := GetCurrentUser().UserName
-	flag := false
-
-	fmt.Println(curUser + "'s meetings between " + start + " and " + end + ": ")
-	ms := AllMeetings.onesMeetings[curUser]
-	for _, v := range ms {
-		if !(v.StartTime.After(endTime) || v.EndTime.Before(startTime)) {
-			fmt.Println()
-			fmt.Println("-------------------------------")
-
-			flag = true
-			fmt.Println("title: " + v.Title)
-			fmt.Printf("participators: %v\n", v.Participators)
-			fmt.Println("start time: " + v.StartTime.Format("2006-01-02"))
-			fmt.Println("end time: " + v.EndTime.Format("2006-01-02"))
-			fmt.Println("sponsor: " + v.Sponsor)
-
-			fmt.Println("-------------------------------")
-			fmt.Println()
-		}
+	if !(validateTime(startTime, endTime)) {
+		fmt.Println("start time must before end time")
+		return []Meeting{}
 	}
 
-	if !flag {
-		fmt.Println("none.")
+	var u Participation
+	agendaDB.Where("username=?", user).Get(&u)
+	for _, t := range u.Meetings {
+		var m Meeting
+		agendaDB.Where("title=?", t).Get(&m)
+		if !(m.StartTime.After(endTime) || m.EndTime.Before(startTime)) {
+			rst = append(rst, m)
+		}
 	}
-}
-
-// -----------------------------------------------------
-// initial and save methods
-// -----------------------------------------------------
-
-// InitAllMeetings initialize AllMeetings
-func InitAllMeetings() {
-	ms := loadAllMeetings()
-
-	AllMeetings = new(meetings)
-	AllMeetings.allMeetings = make(map[string]Meeting)
-	AllMeetings.onesMeetings = make(map[string]map[string]Meeting)
-	for _, m := range ms {
-		var ps []string
-		for _, parts := range m.Participators {
-			ps = append(ps, parts)
+	for _, t := range u.SponsoredMeetings {
+		var m Meeting
+		agendaDB.Where("title=?", t).Get(&m)
+		if !(m.StartTime.After(endTime) || m.EndTime.Before(startTime)) {
+			rst = append(rst, m)
 		}
-		AllMeetings.allMeetings[m.Title] = Meeting{
-			Title:         m.Title,
-			Participators: ps,
-			StartTime:     m.StartTime,
-			EndTime:       m.EndTime,
-			Sponsor:       m.Sponsor,
-		}
-
-		for _, person := range m.Participators {
-			if AllMeetings.onesMeetings[person] == nil {
-				AllMeetings.onesMeetings[person] = make(map[string]Meeting)
-			}
-
-			AllMeetings.onesMeetings[person][m.Title] = m
-		}
-
-		if AllMeetings.onesMeetings[m.Sponsor] == nil {
-			AllMeetings.onesMeetings[m.Sponsor] = make(map[string]Meeting)
-		}
-
-		AllMeetings.onesMeetings[m.Sponsor][m.Title] = m
 	}
-}
 
-// SaveAllMeetings save AllMeetings
-func SaveAllMeetings() {
-	wirteAllMeetings()
+	return rst
 }

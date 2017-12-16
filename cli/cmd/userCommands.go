@@ -32,15 +32,15 @@ var loginCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		username, _ := cmd.Flags().GetString("username")
 		if username == "" {
-			errors.ErrorMsg(entity.GetCurrentUser().UserName, "username required.")
+			errors.ErrorMsg("login error", "username required!")
 		}
 		password, _ := cmd.Flags().GetString("password")
 		if password == "" {
-			errors.ErrorMsg(entity.GetCurrentUser().UserName, "password required!")
+			errors.ErrorMsg("login error", "password required!")
 		}
+
 		if entity.Login(username, password) {
-			errors.LogUserOperation(username, " log in successfully")
-			fmt.Println("user:" + username + " log in successfully")
+			fmt.Println("user:" + username + " login successfully")
 		} else {
 			fmt.Println("failed to log in!")
 		}
@@ -53,10 +53,12 @@ var logoutCmd = &cobra.Command{
 	Long:  `log out as a guest`,
 	// Args:  cobra.MaximumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		if entity.GetCurrentUser().Logout() {
-			errors.LogUserOperation(entity.GetCurrentUser().UserName, " log out")
-			fmt.Println("now you are a guest")
+		cuName, got := entity.GetCurrentUser()
+		if !got {
+			return
 		}
+		entity.Logout(cuName)
+		fmt.Println("logout successfully")
 	},
 }
 
@@ -71,17 +73,17 @@ var registerCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		username, _ := cmd.Flags().GetString("username")
 		if username == "" {
-			errors.ErrorMsg(entity.GetCurrentUser().UserName, "username required.")
+			errors.ErrorMsg("register error", "username required.")
 		}
 		password, _ := cmd.Flags().GetString("password")
 		if password == "" {
-			errors.ErrorMsg(entity.GetCurrentUser().UserName, "password required!")
+			errors.ErrorMsg("register error", "password required!")
 		}
+
 		if entity.Register(username, password) {
-			errors.LogUserOperation("new user: "+username, " created successfully ")
-			fmt.Println("user:" + username + " created successfully!")
+			fmt.Println("user:" + username + " register successfully!")
 		} else {
-			fmt.Println("fail to create a new user")
+			fmt.Println("fail to register")
 		}
 	},
 }
@@ -92,7 +94,11 @@ var usersCmd = &cobra.Command{
 	Long:  `list all users' information`,
 	// Args:  cobra.MaximumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		entity.GetCurrentUser().LookupAllUser()
+		cuName, got := entity.GetCurrentUser()
+		if !got {
+			return
+		}
+		entity.LookupAllUser(cuName)
 	},
 }
 
@@ -102,9 +108,14 @@ var cancelUserCmd = &cobra.Command{
 	Long:  `remove an account from users`,
 	// Args:  cobra.MaximumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		temp := entity.GetCurrentUser().UserName
-		if entity.GetCurrentUser().CancelAccount() {
-			errors.LogUserOperation("user:"+temp, "cancel its account")
+		cuName, got := entity.GetCurrentUser()
+		if !got {
+			return
+		}
+		if entity.CancelAccount(cuName) {
+			fmt.Println("cancel " + cuName + " account successfully")
+		} else {
+			fmt.Println("fail to cancel " + cuName + " account")
 		}
 	},
 }
@@ -115,8 +126,16 @@ var quitMeetingCmd = &cobra.Command{
 	Long:  `quit from all meetings with you as participator`,
 	Args:  cobra.MaximumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
+		cuName, got := entity.GetCurrentUser()
+		if !got {
+			return
+		}
 		title, _ := cmd.Flags().GetString("title")
-		entity.GetCurrentUser().QuitMeeting(title)
+		if entity.QuitMeeting(title, cuName) {
+			fmt.Println("quit meeting " + title + " successfully")
+		} else {
+			fmt.Println("fail to quit meeting " + title)
+		}
 	},
 }
 
@@ -126,7 +145,11 @@ var clearMeetingsCmd = &cobra.Command{
 	Long:  `clear all meetings with you as sponsor`,
 	Args:  cobra.MaximumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		entity.GetCurrentUser().ClearAllMeetings()
+		cuName, got := entity.GetCurrentUser()
+		if !got {
+			return
+		}
+		entity.ClearAllMeetings(cuName)
 	},
 }
 
@@ -135,8 +158,12 @@ var cancelMeetingsCmd = &cobra.Command{
 	Short: "cancel meetings you sponsored with specified title",
 	Long:  `cancel meetings you sponsored with specified title`,
 	Run: func(cmd *cobra.Command, args []string) {
+		cuName, got := entity.GetCurrentUser()
+		if !got {
+			return
+		}
 		title, _ := cmd.Flags().GetString("title")
-		entity.GetCurrentUser().CancelMeeting(title)
+		entity.CancelMeeting(title, cuName)
 	},
 }
 
@@ -146,12 +173,17 @@ var setEmailCmd = &cobra.Command{
 	Long:  `set registered user's email`,
 	// Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		cuName, got := entity.GetCurrentUser()
+		if !got {
+			return
+		}
 		email, _ := cmd.Flags().GetString("email")
 		if email == "" {
-			errors.ErrorMsg(entity.GetCurrentUser().UserName, "valid email required.")
-		} else if entity.GetCurrentUser().SetEmail(email) {
-			errors.LogUserOperation(entity.GetCurrentUser().UserName, " set email to be "+email)
+			errors.ErrorMsg(cuName, "valid email required.")
+			return
 		}
+		entity.SetEmail(email, cuName)
+		fmt.Println("set " + cuName + "'s email to be " + email)
 	},
 }
 
@@ -161,12 +193,17 @@ var setTelCmd = &cobra.Command{
 	Long:  `set registered user's telephone number`,
 	// Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		cuName, got := entity.GetCurrentUser()
+		if !got {
+			return
+		}
 		tel, _ := cmd.Flags().GetString("telephone")
 		if tel == "" {
-			errors.ErrorMsg(entity.GetCurrentUser().UserName, "valid telephone number required.")
-		} else if entity.GetCurrentUser().SetTelephone(tel) {
-			errors.LogUserOperation(entity.GetCurrentUser().UserName, " set telephone to be "+tel)
+			errors.ErrorMsg(cuName, "valid telephone number required.")
+			return
 		}
+		entity.SetTelephone(tel, cuName)
+		fmt.Println("set " + cuName + "'s telephone to be " + tel)
 	},
 }
 

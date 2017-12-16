@@ -1,13 +1,15 @@
 package entity
 
 import (
+	"os"
 	"testing"
 )
 
 // TestMeeting test user's function
 func TestUser(t *testing.T) {
-	InitAllUsers()
-	InitAllMeetings()
+	os.Mkdir("data", 0755)
+	dbFile := "data/cli-agenda.db"
+	InitializeDB(dbFile)
 
 	t.Log("[usertest]: registering new user Jack")
 	if !Register("Jack", "123456") {
@@ -21,23 +23,10 @@ func TestUser(t *testing.T) {
 	}
 	t.Log("login success")
 
-	InitAllUsers()
-	u := GetCurrentUser()
-
-	t.Log("[usertest]: setting Jack's email")
-	if !u.SetEmail("Jack@ubuntu.com") {
-		t.Fatal("set email failure")
-	}
-	t.Log("set email success")
-
-	t.Log("[usertest]: setting Jack's telephone")
-	if !u.SetTelephone("12345678902") {
-		t.Fatal("set telephone failure")
-	}
-	t.Log("set telephone success")
+	cu, _ := GetCurrentUser()
 
 	t.Log("[usertest]: cancelling user Jack")
-	if !u.CancelAccount() {
+	if !CancelAccount(cu) {
 		t.Fatal("cancel user failure")
 	}
 	t.Log("cancel user success")

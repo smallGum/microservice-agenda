@@ -1,97 +1,59 @@
 package entity
 
 import (
+	"os"
 	"testing"
-	"time"
 )
 
-func TestValidateTitle(t *testing.T) {
-	AllMeetings = new(meetings)
-	AllMeetings.allMeetings = make(map[string]Meeting)
-	AllMeetings.allMeetings["test"] = Meeting{}
+// TestMeeting test meetings' function
+func TestMeeting(t *testing.T) {
+	os.Mkdir("data", 0755)
+	InitializeDB("data/agenda.db")
 
-	if flag := validateTitle("test"); flag != false {
-		t.Error("validateTitle test failure!")
-	} else {
-		t.Log("validateTitle test pass")
-	}
-}
-
-func TestValidateParticipators(t *testing.T) {
-	parts := []string{"none", "nothing"}
-
-	if flag := validateParticipators(parts); flag != false {
-		t.Error("validateParticipators test failure!")
-	} else {
-		t.Log("validateParticipators test pass")
-	}
-}
-
-func TestValidateTime(t *testing.T) {
-	start, _ := time.Parse("2006-01-02", "2017-08-10")
-	end, _ := time.Parse("2006-01-02", "2017-07-10")
-
-	if flag := validateTime(start, end); flag != false {
-		t.Error("validateTime test failure!")
-	} else {
-		t.Log("validateTime test pass")
-	}
-}
-
-func TestValidateNoConflicts(t *testing.T) {
-	start, _ := time.Parse("2006-01-02", "2017-07-10")
-	end, _ := time.Parse("2006-01-02", "2017-08-10")
-	AllMeetings = new(meetings)
-	AllMeetings.onesMeetings = make(map[string]map[string]Meeting)
-	m := Meeting{
-		Title:         "nothing",
-		Participators: []string{"yes"},
-		StartTime:     start,
-		EndTime:       end,
-		Sponsor:       "none",
-	}
-	AllMeetings.onesMeetings["none"] = make(map[string]Meeting)
-	AllMeetings.onesMeetings["yes"] = make(map[string]Meeting)
-	AllMeetings.onesMeetings["none"]["nothing"] = m
-	AllMeetings.onesMeetings["yes"]["nothing"] = m
-	parts1 := []string{"yes"}
-	parts2 := []string{"none"}
-	startTime, _ := time.Parse("2006-01-02", "2017-07-12")
-	endTime, _ := time.Parse("2006-01-02", "2017-07-15")
-
-	if flag := validateNoConflicts(parts1, startTime, endTime); flag != false {
-		t.Error("validateNoConflicts test failure!")
-	} else {
-		t.Log("validateNoConflicts test pass")
+	m1 := &Meeting{
+		Title:         "test_meeting_title1",
+		Participators: []string{"Alice", "Bob"},
+		Sponsor:       "Jack",
 	}
 
-	if flag := validateNoConflicts(parts2, startTime, endTime); flag != false {
-		t.Error("validateNoConflicts test failure!")
-	} else {
-		t.Log("validateNoConflicts test pass")
-	}
-}
-
-func TestGetTime(t *testing.T) {
-	t1 := "2017-08"
-	t2 := "2017-08-39"
-	t3 := "2017-14-22"
-
-	if _, flag := getTime(t1); flag != false {
-		t.Error("getTime test failure!")
-	} else {
-		t.Log("getTime test pass")
+	m2 := &Meeting{
+		Title:         "test_meeting_title2",
+		Participators: []string{"Jack", "Bob"},
+		Sponsor:       "Alice",
 	}
 
-	if _, flag := getTime(t2); flag != false {
-		t.Error("getTime test failure!")
-	} else {
-		t.Log("getTime test pass")
-	}
+	u1 := &User{UserName: "Jack"}
+	u2 := &User{UserName: "Bob"}
+	u3 := &User{UserName: "Alice"}
+	agendaDB.Insert(u1)
+	agendaDB.Insert(u2)
+	agendaDB.Insert(u3)
 
-	if _, flag := getTime(t3); flag != false {
-		t.Error("getTime test failure!")
-	} else {
-		t.Log("getTime test pass")
+	t.Log("[meetingtest] creating meeting1")
+	NewMeeting(m1.Title, "2017-01-01", "2017-01-02", m1.Sponsor, m1.Participators)
+	t.Log("[meetingtest] creating meeting2")
+	NewMeeting(m2.Title, "2017-01-03", "2017-01-05", m2.Sponsor, m2.Participators)
+	t.Log("[meetingtest] querying meeting")
+	m := queryMeeting("Alice", "2017-01-01", "2017-01-04")
+	if len(m) != 2 {
+		t.Fatal("meeting creation failure")
 	}
+	t.Log("meeting creation success")
+
+	t.Log("[meetingtest] quiting meeting")
+	QuitMeeting("test_meeting_title1", "Alice")
+	m = queryMeeting("Alice", "2017-01-02", "2017-01-04")
+	if len(m) != 1 {
+		t.Fatal("meeting quit failure")
+	}
+	t.Log("meeting quit success")
+
+	t.Log("[meetingtest] clearing meeting")
+	ClearAllMeetings("Alice")
+	t.Log("[meetingtest] querying meeting")
+	m = queryMeeting("Jack", "2017-01-02", "2017-01-04")
+	if len(m) != 1 {
+		t.Fatal("meeting clear failure")
+	}
+	t.Log("meeting clear success")
 }

@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"fmt"
 	"strings"
 
 	"microservice-agenda/cli/entity"
@@ -31,30 +32,38 @@ var createMeetingCmd = &cobra.Command{
 				 which cannot be the same as any existed meeting, participators in the meeting,
 				 start time and end time of your meeting with the format YYYY-MM-DD.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// get current user
+		cuName, got := entity.GetCurrentUser()
+		if !got {
+			return
+		}
 		// get the arguments
 		title, _ := cmd.Flags().GetString("title")
 		if title == "" {
-			errors.ErrorMsg(entity.GetCurrentUser().UserName, "title of new meeting is required.")
+			errors.ErrorMsg(cuName, "title of new meeting is required.")
 		}
 
 		participatorArg, _ := cmd.Flags().GetString("participators")
 		if participatorArg == "" {
-			errors.ErrorMsg(entity.GetCurrentUser().UserName, "at least one participators of new meeting is required!")
+			errors.ErrorMsg(cuName, "at least one participators of new meeting is required!")
 		}
 		participators := strings.Split(participatorArg, "+")
 
 		startTime, _ := cmd.Flags().GetString("starttime")
 		if startTime == "" {
-			errors.ErrorMsg(entity.GetCurrentUser().UserName, "start time of new meeting is required!")
+			errors.ErrorMsg(cuName, "start time of new meeting is required!")
 		}
 
 		endTime, _ := cmd.Flags().GetString("endtime")
 		if endTime == "" {
-			errors.ErrorMsg(entity.GetCurrentUser().UserName, "end time of new meeting is required!")
+			errors.ErrorMsg(cuName, "end time of new meeting is required!")
 		}
 
-		entity.NewMeeting(title, startTime, endTime, participators)
-		errors.LogMeetingOperation(entity.GetCurrentUser().UserName, "successfully create a new meeting \""+title+"\".")
+		if entity.NewMeeting(title, startTime, endTime, cuName, participators) {
+			fmt.Println("create meeting " + title + " successfully")
+		} else {
+			errors.ErrorMsg(cuName, "fail to create meeting "+title)
+		}
 	},
 }
 
@@ -64,18 +73,21 @@ var queryMeetingsCmd = &cobra.Command{
 	Long:  `To query your meetngs, please enter start time and end time of your meeting with the format YYYY-MM-DD.`,
 
 	Run: func(cmd *cobra.Command, args []string) {
+		cuName, got := entity.GetCurrentUser()
+		if !got {
+			return
+		}
 		startTime, _ := cmd.Flags().GetString("starttime")
 		if startTime == "" {
-			errors.ErrorMsg(entity.GetCurrentUser().UserName, "start time of meeting interval is required!")
+			errors.ErrorMsg(cuName, "start time of meeting interval is required!")
 		}
 
 		endTime, _ := cmd.Flags().GetString("endtime")
 		if endTime == "" {
-			errors.ErrorMsg(entity.GetCurrentUser().UserName, "end time of meeting interval is required!")
+			errors.ErrorMsg(cuName, "end time of meeting interval is required!")
 		}
 
-		entity.GetMeetings(startTime, endTime)
-		errors.LogMeetingOperation(entity.GetCurrentUser().UserName, "query the meetings between "+startTime+" and "+endTime+".")
+		entity.GetMeetings(cuName, startTime, endTime)
 	},
 }
 

@@ -17,11 +17,12 @@ package main
 import (
 	"microservice-agenda/cli/cmd"
 	"microservice-agenda/cli/entity"
+	"os"
 )
 
 func main() {
-	entity.InitAllUsers()
-	entity.InitAllMeetings()
+	os.Mkdir("data", 0755)
+	dbFile := "data/cli-agenda.db"
+	entity.InitializeDB(dbFile)
 	cmd.Execute()
-	entity.SaveAllMeetings()
 }
