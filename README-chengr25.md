@@ -4,7 +4,7 @@
 
   [1 modification about user in apiary (1](https://github.com/smallGum/microservice-agenda/commit/668fbab53a2f8b87d553b3683295e9ed10b68f44)
 
-  [2 modification about user in apiary (2](https://github.com/smallGum/microservice-agenda/commit/35fa4f52a49beea264ec6e452c138bb27a35be39)
+  [2 modification about user in apiary (2](https://github.com/smallGum/microservice-agenda/commit/a70f5970b38e05042949c02c8f7837153defe461)
 
 * user部分的实现
 
@@ -24,4 +24,4 @@
 
 * 略微修改readme
 
-  [1 delete some helper message ]()
+  [1 delete some helper message ](https://github.com/smallGum/microservice-agenda/commit/a70f5970b38e05042949c02c8f7837153defe461)
