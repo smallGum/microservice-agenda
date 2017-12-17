@@ -39,12 +39,12 @@ $ docker run -p 8080:8080 --name agenda -v /data -d gumcheng/microservice-agenda
 run agenda client:
 
 ```shell
-$ docker run -it --rm --net host -v /data gumcheng/microservice-agenda cli
+$ docker run -it --rm --net host -v $PATH_TO_SHARED_FILE:/data gumcheng/microservice-agenda cli
 ```
 
-## Usage
+## Usage & Test
 
-### agenda server usage
+### agenda server usage & test
 
 #### user
 
@@ -168,10 +168,13 @@ After Clearing:
 
 ![clear](images/Clear.png)
 
-### agenda client usage
+### agenda client usage & test
+
+#### help
 
 ```shell
-$ ./cli
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli -h
+
 CLI-agenda is cooperative program for meeting management using cobra package.
         It supports commands such as register, login, creatingMeeting, clearMeetings and so on.
 
@@ -201,4 +204,261 @@ Flags:
 Use "CLI-agenda [command] --help" for more information about a command.
 ```
 
-All functions test are like [CLI-agenda](https://github.com/smallGum/CLI-agenda/blob/master/README.md), thus we do not list here again.
+#### user
+
+create `user1`
+
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli register -u user1 -p user1
+
+register successfully
+user:user1 register successfully!
+```
+
+we continue to create another two users `Alice` and `Bob` like above, then use `user1` to login:
+
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli login -u user1 -p user1
+
+user:user1 login successfully
+```
+
+list all users:
+
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli users
+
+there are 3  users:
+--------------------------
+user:user1
+email:
+tel:
+--------------------------
+user:Alice
+email:
+tel:
+--------------------------
+user:Bob
+email:
+tel:
+--------------------------
+```
+
+`user1` logout:
+
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli logout
+
+logout successfully
+```
+
+then we use `Alcie` to login and set her telephone number and email:
+
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli login -u Alice -p 123456
+
+user:Alice login successfully
+```
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli setTel -t 16354827954
+
+set Alice\'s telephone to be 16354827954
+```
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli setEmail -e 16354827954@163.com
+
+set Alice\'s email to be 16354827954@163.com
+```
+
+now `Alice`'s information is update:
+
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli users
+
+there are 3  users:
+--------------------------
+user:user1
+email:
+tel:
+--------------------------
+user:Alice
+email:16354827954@163.com
+tel:16354827954
+--------------------------
+user:Bob
+email:
+tel:
+--------------------------
+```
+
+#### meeting
+
+create three new meetings:
+
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli createMeeting -t "How to Cook" -p user1 -s 2017-07-08 -e 2017-07-12
+
+create meeting How to Cook successfully
+
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli createMeeting -t "My Favourite Fruit" -p user1+Bob -s 2017-07-16 -e 2017-07-17
+
+create meeting My Favourite Fruit successfully
+
+
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli logout
+
+logout successfully
+
+
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli login -u user1 -p user1
+
+user:user1 login successfully
+
+
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli createMeeting -t "Season You Like" -p Alice+Bob -s 2017-07-12 -e 2017-07-15
+
+create meeting Season You Like successfully
+```
+
+query `user1`'s meetings between `2017-07-08` and `2017-07-13`:
+
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli queryMeetings -s 2017-07-08 -e 2017-07-13
+
+user1\'s meetings between 2017-07-08 and 2017-07-13:
+
+-------------------------------
+title: How to Cook
+participators: [user1]
+start time: 2017-07-08
+end time: 2017-07-12
+sponsor: Alice
+-------------------------------
+
+
+-------------------------------
+title: Season You Like
+participators: [Alice Bob]
+start time: 2017-07-12
+end time: 2017-07-15
+sponsor: user1
+-------------------------------
+```
+
+`user1` quit meeting `How to Cook`:
+
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli quitMeeting -t "How to Cook"
+
+quit meeting How to Cook successfully
+```
+
+`Alice` login and query her meeting between `2017-07-08` and `2017-07-17`:
+
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli logout
+
+logout successfully
+
+
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli login -u Alice -p 123456
+
+user:Alice login successfully
+
+
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli queryMeetings -s 2017-07-08 -e 2017-07-17
+
+Alice\'s meetings between 2017-07-08 and 2017-07-17:
+
+-------------------------------
+title: Season You Like
+participators: [Alice Bob]
+start time: 2017-07-12
+end time: 2017-07-15
+sponsor: user1
+-------------------------------
+
+
+-------------------------------
+title: My Favourite Fruit
+participators: [user1 Bob]
+start time: 2017-07-16
+end time: 2017-07-17
+sponsor: Alice
+-------------------------------
+```
+
+As you can see, there are only two meeting `Season You Like` and `My Favourite Fruit` left. The meeting `How to Cook` is canceled since `user1` quited and there were no participators left.
+
+cancel `Alice`'s meeting `My Favourite Fruit`:
+
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli cancelMeeting -t "My Favourite Fruit"
+```
+
+cancel success:
+
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli queryMeetings -s 2017-07-08 -e 2017-07-17
+
+Alice\'s meetings between 2017-07-08 and 2017-07-17:
+
+-------------------------------
+title: Season You Like
+participators: [Alice Bob]
+start time: 2017-07-12
+end time: 2017-07-15
+sponsor: user1
+-------------------------------
+```
+
+#### cancel one's account
+
+this operation will influence both meetings and users
+cancel `user1`'s account:
+
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli logout
+
+logout successfully
+
+
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli login -u user1 -p user1
+
+user:user1 login successfully
+
+
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli cancelUser
+
+cancel user1 account successfully
+```
+
+`Bob` login and see all the users and meetings:
+
+```shell
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli login -u Bob -p 123456
+
+user:Bob login successfully
+
+
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli users
+
+there are 2  users:
+--------------------------
+user:Alice
+email:16354827954@163.com
+tel:16354827954
+--------------------------
+user:Bob
+email:
+tel:
+--------------------------
+
+
+$ docker run -it --rm --net host -v /Users/jack-cheng/Golang/src/microservice-agenda/cli/data:/data gumcheng/microservice-agenda cli queryMeetings -s 2017-07-08 -e 2017-07-17
+Bob\'s meetings between 2017-07-08 and 2017-07-17:
+
+none.
+```
+
+both `user1` account and meeting `Season You Like` are canceled.
