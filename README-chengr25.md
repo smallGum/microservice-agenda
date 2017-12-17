@@ -1,5 +1,7 @@
 # 15331052工作摘要
 
+## 部分主要commit 
+
 * apiary.apib文档user部分的修改
 
   [1 modification about user in apiary (1](https://github.com/smallGum/microservice-agenda/commit/668fbab53a2f8b87d553b3683295e9ed10b68f44)
