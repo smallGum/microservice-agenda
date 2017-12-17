@@ -73,7 +73,7 @@ func registerHndler(formatter *render.Render) http.HandlerFunc {
 		user := entities.NewUser(username, password)
 		if entities.Register(username, password) {
 			fmt.Println("register success")
-			formatter.JSON(w, http.StatusOK, user)
+			formatter.JSON(w, http.StatusCreated, user)
 		} else {
 			w.Write([]byte("register failed\n"))
 			fmt.Println("register failed")
