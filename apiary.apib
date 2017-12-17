@@ -9,11 +9,11 @@ Agenda is a simple API allowing consumers to schedule meeting on-line
 
 Resource operations related to a user in the API.
 
-## User-Key [/v1/user/getkey{?username,password}]
+## User-Key [/v1/users/getkey{?username}]
 
 + Parameters
     - username : `root` (string, required) - User Name
-    - password : `pass` (required)
+
 
 ### Get User Key [GET]
 
@@ -22,8 +22,11 @@ get the key of currently logined user
 + Response 200 (application/json)
 
         {
-            "key":"1",
-            "UserName":"Lisi"
+          "UserName": "Jack",
+          "Password": "123456",
+          "Email": "",
+          "Tel": "",
+          "Meetings": null
         }
 
 
@@ -64,15 +67,17 @@ Resources related to a users in the API.
 
     + Headers
 
-            Location: /users/1
+            Location: v1/users/1
 
     + Body
 
             {
                 "id": 1,
-                "username":"zhang3",
-                "password":"zhang",
-                "email":"zhang3@mail2.sysu.edu.cn"
+                "UserName":"zhang3",
+                "Password":"zhang",
+                "Email":""
+                "Tel": "",
+                "Meetings": null
             }
 
 ### Get User by ID [GET /v1/users/{id}]
@@ -83,10 +88,11 @@ Resources related to a users in the API.
 + Response 200 (application/json)
 
         {
-            "username":"zhang3",
-            "password":"zhang",
-            "email":"zhang3@mail2.sysu.edu.cn"
-            "telephone":"1231212123"
+          "UserName": "ZhangSan",
+          "Password": "123456",
+          "Email": "",
+          "Tel": "",
+          "Meetings": null
         }
 
 
