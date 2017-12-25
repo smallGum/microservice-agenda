@@ -14,16 +14,16 @@ $ docker pull gumcheng/microservice-agenda
 
 Using default tag: latest
 latest: Pulling from gumcheng/microservice-agenda
-aa18ad1a0d33: Pull complete 
-15a33158a136: Pull complete 
-f67323742a64: Pull complete 
-1b4531640cb0: Pull complete 
-3e7f1f935f2c: Pull complete 
-a4db2a724d81: Pull complete 
-9a798ef77d30: Pull complete 
-2eb0db2e75b6: Pull complete 
-9f5dcecaa851: Pull complete 
-62287a31bfe0: Pull complete 
+aa18ad1a0d33: Pull complete
+15a33158a136: Pull complete
+f67323742a64: Pull complete
+1b4531640cb0: Pull complete
+3e7f1f935f2c: Pull complete
+a4db2a724d81: Pull complete
+9a798ef77d30: Pull complete
+2eb0db2e75b6: Pull complete
+9f5dcecaa851: Pull complete
+62287a31bfe0: Pull complete
 Digest: sha256:06cacf43a4f6ee6a4b0faf7a0cd017e16fa6f6056140f428f4d685726d2dfe69
 Status: Downloaded newer image for gumcheng/microservice-agenda:latest
 ```
@@ -53,7 +53,7 @@ Register:
 ```shell
 $ curl -d "username=Jack&password=123456" http://localhost:8080/v1/newusers
 
-this is register handlerget Jack123456{
+{
   "UserName": "Jack",
   "Password": "123456",
   "Email": "",
@@ -67,7 +67,7 @@ Login:
 ```shell
 $ curl -d "username=Jack&password=123456" http://localhost:8080/v1/login
 
-this is log in handlerget Jack123456{
+{
   "UserName": "Jack",
   "Password": "123456",
   "Email": "",
@@ -81,7 +81,7 @@ Get user key:
 ```shell
 $ curl -d "username=Jack&password=123456" http://localhost:8080/v1/users/getkey
 
-this is get user key handler{
+{
   "Key": 1,
   "UserName": "Jack"
 }
@@ -92,7 +92,7 @@ Get user by id:
 ```shell
 $ curl -d "id=1" http://localhost:8080/v1/users
 
-this is get user by id handler{
+{
   "UserName": "Jack",
   "Password": "123456",
   "Email": "",
@@ -106,7 +106,7 @@ List all users:
 ```shell
 $ curl http://localhost:8080/v1/allusers?key=1
 
-this is list all user handler[
+[
   {
     "UserName": "Jack",
     "Password": "123456",
